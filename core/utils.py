@@ -9,7 +9,6 @@
 import csv
 import os
 from shutil import copyfile
-import config
 
 # defaults
 DEFAULT_LABEL_FILE = '../data/class_labels_indices.csv'
@@ -55,7 +54,7 @@ def download(class_name, args):
             os.system(("ffmpeg -ss " + str(row[1]) + " -t 10 -i $(youtube-dl -f 'bestaudio' -g https://www.youtube.com/watch?v=" +
                        str(row[0]) + ") -ar " + str(DEFAULT_FS) + " -- \"" + dst_dir + "/" + str(row[0]) + "_" + row[1] + ".wav\""))
 
-def downloadNewClass(class_name, csv_dir, args):
+def downloadNewClass(class_name, args):
     # construct path to destination dir
     dst_dir_root = args.destination_dir if args.destination_dir is not None else DEFAULT_DEST_DIR
     dst_dir = os.path.join(dst_dir_root, class_name)  # Create directory to store found files
@@ -66,6 +65,7 @@ def downloadNewClass(class_name, csv_dir, args):
         os.makedirs(dst_dir)
         print("dst_dir: " + dst_dir)
 
+    csv_dir = args.csv_dataset
     with open(csv_dir) as dataset:
         reader = csv.reader(dataset)
 
