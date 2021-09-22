@@ -72,4 +72,7 @@ if __name__ == '__main__':
             os.makedirs(args.destination_dir)
         download(args)
 
-
+    elif args.mode == 'newclass':
+        if args.destination_dir is not None and not os.path.isdir(args.destination_dir):
+            os.makedirs(args.destination_dir)
+        downloadNewClass(args)

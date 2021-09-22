@@ -9,12 +9,14 @@
 import csv
 import os
 from shutil import copyfile
+import config
 
 # defaults
 DEFAULT_LABEL_FILE = '../data/class_labels_indices.csv'
 DEFAULT_CSV_DATASET = '../data/unbalanced_train_segments.csv'
 DEFAULT_DEST_DIR = '../output/'
 DEFAULT_FS = 16000
+DEFAULT_NUM_FILES = 200
 
 
 def find(class_name, args):
@@ -53,6 +55,28 @@ def download(class_name, args):
             os.system(("ffmpeg -ss " + str(row[1]) + " -t 10 -i $(youtube-dl -f 'bestaudio' -g https://www.youtube.com/watch?v=" +
                        str(row[0]) + ") -ar " + str(DEFAULT_FS) + " -- \"" + dst_dir + "/" + str(row[0]) + "_" + row[1] + ".wav\""))
 
+def downloadNewClass(class_name, csv_dir, args):
+    # construct path to destination dir
+    dst_dir_root = args.destination_dir if args.destination_dir is not None else DEFAULT_DEST_DIR
+    dst_dir = os.path.join(dst_dir_root, class_name)  # Create directory to store found files
+
+    print("dst_dir: " + dst_dir)
+
+    if not os.path.isdir(dst_dir):
+        os.makedirs(dst_dir)
+        print("dst_dir: " + dst_dir)
+
+    with open(csv_dir) as dataset:
+        reader = csv.reader(dataset)
+
+        for row in reader:
+            # print command for debugging
+            print("ffmpeg -ss " + str(row[1]) + " -t 10 -i $(youtube-dl -f 'bestaudio' -g https://www.youtube.com/watch?v=" +
+                       str(row[0]) + ") -ar " + str(DEFAULT_FS) + " -- \"" + dst_dir + "/" + str(row[0]) + "_" + row[1] + ".wav\"")
+            os.system(("ffmpeg -ss " + str(row[1]) + " -t 10 -i $(youtube-dl -f 'bestaudio' -g https://www.youtube.com/watch?v=" +
+                       str(row[0]) + ") -ar " + str(DEFAULT_FS) + " -- \"" + dst_dir + "/" + str(row[0]) + "_" + row[1] + ".wav\""))
+
+
 
 def create_csv(class_name, args):
     """
@@ -89,11 +113,14 @@ def create_csv(class_name, args):
         #  Include the row if it contains label for desired class and no labels of blacklisted classes
         to_write = [row for row in reader for label in label_id if label in row[3]
                     and bool(set(row[3].split(",")).intersection(blacklisted_ids)) is False]  # added check for blacklisted classes
+        to_write = to_write[:DEFAULT_NUM_FILES+1]
         writer.writerows(to_write)
 
     print("Finished writing CSV file for " + class_name)
 
     return new_csv_path
+
+
 
 
 def get_label_id(class_name, args):
